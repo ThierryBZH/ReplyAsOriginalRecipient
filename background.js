@@ -32,7 +32,7 @@ const on_compose_start = async (tab, win)=>{
     if (is_reply(msg))
     {
 			let oriMsg = await tb.messages.getFull(msg.relatedMessageId);
-			let originalTo;
+			let originalTo = null;
 			if (oriMsg) {
 				log.info('orimessage',json2({headers:oriMsg.headers}));
 				originalTo = oriMsg.headers['x-original-to']?oriMsg.headers['x-original-to'][0]:null;
@@ -49,8 +49,14 @@ const on_compose_start = async (tab, win)=>{
 				if (splitted[0]) identityName[0]=splitted[0];
 				if (splitted[1]) identityName[1]=splitted[1];
 			}
-			originalTo = identityName[0]+' <'+identityName[1]+'>';
-			await tb.compose.setComposeDetails(tab.id, {from: originalTo});
+			if(identityName[0] !== null){
+			    originalTo = identityName[0]+' <'+identityName[1]+'>';
+			} else {
+			    originalTo = identityName[1];
+			}
+			if(originalTo !== null){
+			    await tb.compose.setComposeDetails(tab.id, {from: originalTo});
+			}
       msg = await tb.compose.getComposeDetails(tab.id);
     }
 		
@@ -98,9 +104,9 @@ const splitAddr = addr=> {
 	var lIoLower = addr.lastIndexOf('<');
 	var lIoGreater = addr.lastIndexOf('>');
 
-	var fullName,emailAddr;
+	var fullName = null, emailAddr = null;
 	if (lIoLower==-1) {
-		if (addr.lastIndexOf('@')!=-1) { 
+		if (addr.lastIndexOf('@')!=-1) {
 			emailAddr = addr.trim();
 		}
 	} else if (lIoLower<lIoGreater) {
