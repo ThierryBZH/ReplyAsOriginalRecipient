@@ -16,7 +16,7 @@ const on_compose_start = async (tab, win)=>{
         win: {id: win.id, type: win.type},
         details: msg,
     }));
-		
+
     // recipients are not always available right away, so need to wait
     if (!is_new(msg))
     {
@@ -28,32 +28,32 @@ const on_compose_start = async (tab, win)=>{
         }
         log.info('final details', json2(msg));
     }
-    
+
     if (is_reply(msg))
     {
-			let oriMsg = await tb.messages.getFull(msg.relatedMessageId);
-			let originalTo;
-			if (oriMsg) {
-				log.info('orimessage',json2({headers:oriMsg.headers}));
-				originalTo = oriMsg.headers['x-original-to']?oriMsg.headers['x-original-to'][0]:null;
-			}
-			let identityName = splitAddr(msg.from);
-			if (!originalTo) {
-				if (oriMsg.headers['to'].length==1) {
-					originalTo = oriMsg.headers['to'][0];
-				}
-			}
-			
-			if (originalTo) {
-				let splitted = 	splitAddr(originalTo);
-				if (splitted[0]) identityName[0]=splitted[0];
-				if (splitted[1]) identityName[1]=splitted[1];
-			}
-			originalTo = identityName[0]+' <'+identityName[1]+'>';
-			await tb.compose.setComposeDetails(tab.id, {from: originalTo});
-      msg = await tb.compose.getComposeDetails(tab.id);
+        let oriMsg = await tb.messages.getFull(msg.relatedMessageId);
+        let originalTo;
+        if (oriMsg) {
+            log.info('orimessage',json2({headers:oriMsg.headers}));
+            originalTo = oriMsg.headers['x-original-to']?oriMsg.headers['x-original-to'][0]:null;
+        }
+        let identityName = splitAddr(msg.from);
+        if (!originalTo) {
+            if (oriMsg.headers['to'].length==1) {
+                originalTo = oriMsg.headers['to'][0];
+            }
+        }
+
+        if (originalTo) {
+            let splitted =  splitAddr(originalTo);
+            if (splitted[0]) identityName[0]=splitted[0];
+            if (splitted[1]) identityName[1]=splitted[1];
+        }
+        originalTo = identityName[0]+' <'+identityName[1]+'>';
+        await tb.compose.setComposeDetails(tab.id, {from: originalTo});
+        msg = await tb.compose.getComposeDetails(tab.id);
     }
-		
+
     // HACK: editing CC causes focus to move to CC field, which is not useful.
     // Least bad solution is to fix focus manually to body/to.
     for (let delay of [0, 1, 10, 10])
@@ -95,20 +95,20 @@ const is_new = msg=>{
 }
 
 const splitAddr = addr=> {
-	var lIoLower = addr.lastIndexOf('<');
-	var lIoGreater = addr.lastIndexOf('>');
+    var lIoLower = addr.lastIndexOf('<');
+    var lIoGreater = addr.lastIndexOf('>');
 
-	var fullName,emailAddr;
-	if (lIoLower==-1) {
-		if (addr.lastIndexOf('@')!=-1) { 
-			emailAddr = addr.trim();
-		}
-	} else if (lIoLower<lIoGreater) {
-		emailAddr = addr.substring(lIoLower+1,lIoGreater);
-		fullName = addr.substring(0,lIoLower).trim();
-	}
+    var fullName,emailAddr;
+    if (lIoLower==-1) {
+        if (addr.lastIndexOf('@')!=-1) {
+            emailAddr = addr.trim();
+        }
+    } else if (lIoLower<lIoGreater) {
+        emailAddr = addr.substring(lIoLower+1,lIoGreater);
+        fullName = addr.substring(0,lIoLower).trim();
+    }
 
-	return [fullName,emailAddr];
+    return [fullName,emailAddr];
 }
 
 
