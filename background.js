@@ -40,7 +40,19 @@ const on_compose_start = async (tab, win)=>{
 			let identityName = splitAddr(msg.from);
 			if (!originalTo) {
 				if (oriMsg.headers['to'].length==1) {
-					originalTo = oriMsg.headers['to'][0];
+					let split_recipients = oriMsg.headers['to'][0].split(", ");
+					if (split_recipients.length > 1) {
+						let addr;
+						for (addr in split_recipients) {
+							if (splitAddr(split_recipients[addr])[1] !=
+							    splitAddr(oriMsg.headers['from'][0])[1]) {
+								originalTo = split_recipients[addr];
+								break;
+							}
+						}
+					}
+					if (!originalTo)
+						originalTo = oriMsg.headers['to'][0];
 				}
 			}
 			
