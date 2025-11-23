@@ -32,15 +32,21 @@ const on_compose_start = async (tab, win)=>{
     if (is_reply(msg))
     {
 			let oriMsg = await tb.messages.getFull(msg.relatedMessageId);
-			let originalTo;
+			let originalTo = null;
 			if (oriMsg) {
 				log.info('orimessage',json2({headers:oriMsg.headers}));
 				originalTo = oriMsg.headers['x-original-to']?oriMsg.headers['x-original-to'][0]:null;
 			}
 			let identityName = splitAddr(msg.from);
-			if (!originalTo) {
-				if (oriMsg.headers['to'].length==1) {
+			if (oriMsg && oriMsg.headers['to'].length==1) {
+				if(!originalTo){
 					originalTo = oriMsg.headers['to'][0];
+				} else {
+					// Take name from To if not found in OriginalTo
+					const [toName, toAddr] = splitAddr(oriMsg.headers['to'][0]);
+					if(!identityName[0] && toName !== null && toAddr == originalTo){
+						identityName[0] = toName;
+					}
 				}
 			}
 			
@@ -100,9 +106,9 @@ const splitAddr = addr=> {
 	var lIoLower = addr.lastIndexOf('<');
 	var lIoGreater = addr.lastIndexOf('>');
 
-	var fullName,emailAddr;
+	var fullName = null, emailAddr = null;
 	if (lIoLower==-1) {
-		if (addr.lastIndexOf('@')!=-1) { 
+		if (addr.lastIndexOf('@')!=-1) {
 			emailAddr = addr.trim();
 		}
 	} else if (lIoLower<lIoGreater) {
