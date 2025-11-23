@@ -49,7 +49,9 @@ const on_compose_start = async (tab, win)=>{
 				if (splitted[0]) identityName[0]=splitted[0];
 				if (splitted[1]) identityName[1]=splitted[1];
 			}
-			originalTo = identityName[0]+' <'+identityName[1]+'>';
+			const name = (identityName[0]||'').trim();
+			const email = (identityName[1]||'').trim();
+			originalTo = (name ? name+' ' : '')+'<'+email+'>';
 			await tb.compose.setComposeDetails(tab.id, {from: originalTo});
       msg = await tb.compose.getComposeDetails(tab.id);
     }
